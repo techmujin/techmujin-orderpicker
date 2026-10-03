@@ -166,7 +166,7 @@ async function refresh() {
     render();
     $("updated").textContent = `最終更新 ${fmt.format(new Date())}（最新の状態はページを再読み込みすると表示されます）`;
   } catch {
-    $("updated").textContent = "最新状態の取得に失敗しました。再試行中…";
+    $("updated").textContent = "最新状態の取得に失敗しました。ページを再読み込みしてください";
   }
 }
 
