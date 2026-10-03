@@ -38,8 +38,6 @@
   .boardlabel { color: var(--muted); font-size: .85rem; margin-top: 16px !important; }
   .resultslink { margin: -16px 0 24px; font-size: .9rem; }
   dialog::backdrop { background: rgb(0 0 0 / .55); }
-  .sound { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--muted); cursor: pointer; }
-  .sound input { width: auto; }
 
   .big { font-size: 5.5rem; font-weight: 800; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums;
     margin: 8px auto; display: inline-block; min-width: 1.6em; }
@@ -97,7 +95,6 @@
           </fieldset>
         </div>
         <button id="submit" type="submit">くじを引く</button>
-        <label class="sound"><input type="checkbox" id="sound" checked>効果音</label>
       </div>
       <p class="msg" id="msg" role="status"></p>
     </form>
@@ -208,7 +205,6 @@ $("form").addEventListener("submit", async (e) => {
 
   $("submit").disabled = true;
   showMsg("");
-  sfx.init();
   try {
     const res = await fetch("/api/draw", {
       method: "POST",
@@ -269,10 +265,10 @@ async function reveal(d) {
 
   try {
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      // 1. シャッフル（ドラムロール）
+      // 1. シャッフル
       status.textContent = `${d.drawer} さんがくじを引いています…`;
       big.classList.add("shake");
-      for (let t = 0; t < 1400; t += 45) { sfx.roll(); await sleep(45); }
+      await sleep(1400);
       big.classList.remove("shake");
 
       // 2. ルーレット：空き枠を順に照らし、だんだん減速して当選枠で止める
@@ -286,7 +282,6 @@ async function reveal(d) {
         const idx = i % free.length;
         els.forEach((el, j) => el.classList.toggle("on", j === idx));
         big.textContent = free[idx];
-        sfx.tick(i / steps);
         await sleep(35 + 320 * (i / steps) ** 3);
       }
 
@@ -307,7 +302,6 @@ async function reveal(d) {
     $("r-meta").textContent = `${d.drawer} さん・${fmt.format(new Date(d.drawn_at))}`;
     $("r-result").hidden = false;
     $("r-result").className = "fadein";
-    sfx.fanfare();
     confetti();
   } finally {
     revealing = false;
@@ -319,32 +313,6 @@ async function reveal(d) {
 }
 
 $("result").addEventListener("cancel", (e) => { if (revealing) e.preventDefault(); });
-
-// ---- 効果音（WebAudio で合成。音声ファイル不要）
-const sfx = (() => {
-  let ctx = null;
-  const on = () => ctx && $("sound").checked;
-  function tone(freq, start, dur, type = "triangle", vol = 0.12) {
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = type; o.frequency.value = freq;
-    g.gain.setValueAtTime(vol, ctx.currentTime + start);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
-    o.connect(g).connect(ctx.destination);
-    o.start(ctx.currentTime + start); o.stop(ctx.currentTime + start + dur + 0.02);
-  }
-  return {
-    init() {
-      try { ctx ??= new AudioContext(); ctx.resume(); } catch { ctx = null; }
-    },
-    roll() { if (on()) tone(90 + Math.random() * 60, 0, 0.05, "square", 0.05); },
-    tick(progress) { if (on()) tone(900 + progress * 500, 0, 0.04, "square", 0.06); },
-    fanfare() {
-      if (!on()) return;
-      [[523, 0], [659, 0.1], [784, 0.2], [1047, 0.32]].forEach(([f, t]) => tone(f, t, 0.18));
-      [523, 659, 784, 1047].forEach((f) => tone(f, 0.5, 0.9, "triangle", 0.08));
-    },
-  };
-})();
 
 // ---- 紙吹雪
 function confetti() {
@@ -384,11 +352,6 @@ function showMsg(text, isErr = false) {
   $("msg").textContent = text;
   $("msg").className = "msg" + (isErr ? " err" : "");
 }
-
-try { $("sound").checked = localStorage.getItem("sound") !== "off"; } catch {}
-$("sound").addEventListener("change", () => {
-  try { localStorage.setItem("sound", $("sound").checked ? "on" : "off"); } catch {}
-});
 
 refresh();
 setInterval(refresh, 10000);
