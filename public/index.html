@@ -27,6 +27,8 @@
   button:disabled { opacity: .5; cursor: not-allowed; }
   .msg { grid-column: 1 / -1; margin: 0; font-size: .95rem; }
   .msg:empty { display: none; }
+  .hint { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
+  .hint:empty { display: none; }
   .msg.err { color: var(--err); }
   dialog { border: 0; border-radius: 16px; padding: 32px 28px; background: var(--card); color: var(--text);
     width: min(420px, calc(100vw - 32px)); text-align: center; max-height: calc(100vh - 32px); }
@@ -73,7 +75,7 @@
 <body>
 <main>
   <h1>テック無尽 発表順くじ引き</h1>
-  <p class="lead">各コミュニティは「コミュニティ紹介（午前）」と「ライトニングトーク（午後）」をそれぞれ 1 回ずつ引けます。結果はこのページで誰でも確認できます。</p>
+  <p class="lead">「コミュニティ紹介（午前）」は全コミュニティが、「ライトニングトーク（午後）」は LT に参加するコミュニティのみが、それぞれ 1 回ずつくじを引けます。結果はこのページで誰でも確認できます。</p>
   <p class="resultslink"><a href="results.html" target="_blank">途中結果を表示する（くじを引いた人の名前つき・プロジェクター／共有用）</a></p>
   <p class="notice"><strong>くじ引きの締め切りは 10月31日（土）です。</strong>期日までにくじを引かなかった場合、そのコミュニティの発表順は運営で決定します。</p>
 
@@ -96,6 +98,7 @@
             <label><input type="radio" name="session" value="intro" required>紹介（午前）</label>
             <label><input type="radio" name="session" value="lt">LT（午後）</label>
           </fieldset>
+          <p class="hint" id="session-hint"></p>
         </div>
         <button id="submit" type="submit">くじを引く</button>
       </div>
@@ -190,11 +193,17 @@ function render() {
 
 function updateSessionAvailability() {
   const id = Number($("community").value);
+  const community = state.communities.find((c) => c.id === id);
+  const hints = [];
   for (const input of document.querySelectorAll('input[name="session"]')) {
     const done = state.draws.some((d) => d.community_id === id && d.session === input.value);
-    input.disabled = done;
-    if (done) input.checked = false;
+    const notInLt = input.value === "lt" && community && !community.in_lt;
+    input.disabled = done || notInLt;
+    if (input.disabled) input.checked = false;
+    if (notInLt) hints.push("このコミュニティは LT に参加しないため、LT のくじはありません");
+    else if (done) hints.push(`${input.value === "intro" ? "紹介" : "LT"} のくじは引き済みです`);
   }
+  $("session-hint").textContent = hints.join(" / ");
 }
 
 $("community").addEventListener("change", updateSessionAvailability);
@@ -251,7 +260,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function reveal(d) {
   const dlg = $("result"), big = $("r-slot"), chips = $("r-chips"), status = $("r-status");
-  const total = state.communities.length || 13;
+  const total = slotCount(state, d.session);
   const taken = new Set(state.draws.filter((x) => x.session === d.session && x.slot !== d.slot).map((x) => x.slot));
   const free = [];
   for (let s = 1; s <= total; s++) if (!taken.has(s)) free.push(s);

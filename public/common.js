@@ -17,8 +17,13 @@ function bySlot(state, session) {
   return new Map(state.draws.filter((d) => d.session === session).map((d) => [d.slot, d]));
 }
 
+// そのセッションの枠数（午前は全コミュニティ、午後は LT 参加コミュニティのみ）
+function slotCount(state, session) {
+  return session === "lt" ? state.communities.filter((c) => c.in_lt).length : state.communities.length;
+}
+
 function progress(state, session) {
-  return `${state.draws.filter((d) => d.session === session).length} / ${state.communities.length} 確定`;
+  return `${state.draws.filter((d) => d.session === session).length} / ${slotCount(state, session)} 確定`;
 }
 
 // 引いた人の名前は results.html でのみ表示する（showDrawer: true）
@@ -27,7 +32,7 @@ function progress(state, session) {
 function orderRowsHTML(state, session, { fresh = new Set(), showDrawer = false } = {}) {
   const map = bySlot(state, session);
   const rows = [];
-  for (let s = 1; s <= state.communities.length; s++) {
+  for (let s = 1; s <= slotCount(state, session); s++) {
     const d = map.get(s);
     rows.push(d
       ? `<tr class="${fresh.has(`${session}:${d.community_id}`) ? "fresh" : ""}"><td class="slot">${s}</td><td>${esc(d.community)}</td><td>${showDrawer ? `${esc(d.drawer)}<span class="sub">` : `<span class="nowrap">`}${fmt.format(new Date(d.drawn_at))}</span></td></tr>`
@@ -47,7 +52,7 @@ function boardHTML(state, { focus, highlight } = {}) {
   return SESSIONS.map((session) => {
     const map = bySlot(state, session);
     const items = [];
-    for (let s = 1; s <= state.communities.length; s++) {
+    for (let s = 1; s <= slotCount(state, session); s++) {
       const d = map.get(s);
       const hl = highlight && highlight.session === session && highlight.slot === s;
       items.push(d
