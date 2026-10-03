@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { createHash, randomInt } from "node:crypto";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 0/O, 1/I を除外
-const CODE_LENGTH = 8;
+const CODE_LENGTH = 4;
 
 const communities = JSON.parse(readFileSync("communities.json", "utf8"));
 const sqlStr = (s) => `'${s.replaceAll("'", "''")}'`;
