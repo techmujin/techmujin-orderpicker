@@ -74,7 +74,7 @@
 <main>
   <h1>テック無尽 発表順くじ引き</h1>
   <p class="lead">各コミュニティは「コミュニティ紹介（午前）」と「ライトニングトーク（午後）」をそれぞれ 1 回ずつ引けます。結果はこのページで誰でも確認できます。</p>
-  <p class="resultslink"><a href="results.html" target="_blank">途中結果だけを表示する（プロジェクター・共有用）</a></p>
+  <p class="resultslink"><a href="results.html" target="_blank">途中結果を表示する（くじを引いた人の名前つき・プロジェクター／共有用）</a></p>
   <p class="notice"><strong>くじ引きの締め切りは 10月31日（土）です。</strong>期日までにくじを引かなかった場合、そのコミュニティの発表順は運営で決定します。</p>
 
   <section class="card">
@@ -86,7 +86,7 @@
       <label>合言葉（運営から配布）
         <input id="code" required maxlength="16" autocapitalize="characters" spellcheck="false">
       </label>
-      <label>くじを引く人の名前
+      <label>くじを引く人の名前（ハンドルネーム可）
         <input id="drawer" required maxlength="40">
       </label>
       <div class="row2">
@@ -107,17 +107,17 @@
   <div class="grid2">
     <section class="card">
       <h2>午前：コミュニティ紹介<small id="prog-intro"></small></h2>
-      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-intro"></tbody></table></div>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>日時</th></tr></thead><tbody id="order-intro"></tbody></table></div>
     </section>
     <section class="card">
       <h2>午後：ライトニングトーク<small id="prog-lt"></small></h2>
-      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-lt"></tbody></table></div>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>日時</th></tr></thead><tbody id="order-lt"></tbody></table></div>
     </section>
   </div>
 
   <section class="card">
     <h2>くじ引き履歴（新しい順）</h2>
-    <div class="tablewrap"><table><thead><tr><th>日時</th><th>コミュニティ / 引いた人</th><th>結果</th></tr></thead><tbody id="log"></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>日時</th><th>コミュニティ</th><th>結果</th></tr></thead><tbody id="log"></tbody></table></div>
   </section>
 </main>
 
@@ -182,7 +182,7 @@ function render() {
   seen = keys;
 
   for (const session of SESSIONS) {
-    $(`order-${session}`).innerHTML = orderRowsHTML(state, session, fresh);
+    $(`order-${session}`).innerHTML = orderRowsHTML(state, session, { fresh });
     $(`prog-${session}`).textContent = progress(state, session);
   }
   $("log").innerHTML = logRowsHTML(state);
@@ -219,7 +219,7 @@ $("form").addEventListener("submit", async (e) => {
       $("code").value = "";
       await reveal(data.draw);
     } else if (res.status === 409 && data.draw) {
-      showMsg(`${data.error}（${data.draw.slot} 番 / ${data.draw.drawer} さんが ${fmt.format(new Date(data.draw.drawn_at))} に引きました）`, true);
+      showMsg(`${data.error}（${data.draw.slot} 番 / ${fmt.format(new Date(data.draw.drawn_at))} に引かれています）`, true);
     } else {
       showMsg(data.error || "エラーが発生しました", true);
     }
@@ -269,7 +269,7 @@ async function reveal(d) {
   try {
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
       // 1. シャッフル
-      status.textContent = `${d.drawer} さんがくじを引いています…`;
+      status.textContent = "くじを引いています…";
       big.classList.add("shake");
       await sleep(1400);
       big.classList.remove("shake");
@@ -302,7 +302,7 @@ async function reveal(d) {
     status.textContent = "";
     $("r-badge").textContent = d.slot === 1 ? "トップバッター！" : d.slot === total ? "大トリ！" : "";
     $("r-detail").textContent = `${d.slot} 番目に決定！`;
-    $("r-meta").textContent = `${d.drawer} さん・${fmt.format(new Date(d.drawn_at))}`;
+    $("r-meta").textContent = fmt.format(new Date(d.drawn_at));
     $("r-result").hidden = false;
     $("r-result").className = "fadein";
     confetti();

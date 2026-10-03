@@ -51,10 +51,10 @@ async function refresh() {
     const fresh = seen ? new Set([...keys].filter((k) => !seen.has(k))) : new Set();
     seen = keys;
     for (const session of SESSIONS) {
-      $(`order-${session}`).innerHTML = orderRowsHTML(state, session, fresh);
+      $(`order-${session}`).innerHTML = orderRowsHTML(state, session, { fresh, showDrawer: true });
       $(`prog-${session}`).textContent = progress(state, session);
     }
-    $("log").innerHTML = logRowsHTML(state);
+    $("log").innerHTML = logRowsHTML(state, { showDrawer: true });
     $("updated").textContent = `最終更新 ${fmt.format(new Date())}（5 秒ごとに自動更新）`;
   } catch {
     $("updated").textContent = "最新状態の取得に失敗しました。再試行中…";
