@@ -1,0 +1,5 @@
+node_modules/
+.wrangler/
+# 各コミュニティの合言葉を含むため絶対にコミットしない
+seed.sql
+codes.csv
