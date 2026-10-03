@@ -161,7 +161,7 @@ async function refresh() {
   try {
     state = await fetchState();
     render();
-    $("updated").textContent = `最終更新 ${fmt.format(new Date())}（10 秒ごとに自動更新）`;
+    $("updated").textContent = `最終更新 ${fmt.format(new Date())}（最新の状態はページを再読み込みすると表示されます）`;
   } catch {
     $("updated").textContent = "最新状態の取得に失敗しました。再試行中…";
   }
@@ -357,7 +357,6 @@ function showMsg(text, isErr = false) {
 }
 
 refresh();
-setInterval(refresh, 10000);
 </script>
 </body>
 </html>
