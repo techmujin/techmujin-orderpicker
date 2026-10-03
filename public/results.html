@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テック無尽 発表順 途中結果</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  main { max-width: 1280px; }
+  .head { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+  .head p { margin: 0; color: var(--muted); font-size: .9rem; }
+  /* プロジェクターで後ろの席からも読めるよう大きめに */
+  @media (min-width: 900px) {
+    .grid2 table { font-size: 1.15rem; }
+    .grid2 h2 { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <h1>テック無尽 発表順（途中結果）</h1>
+    <p><span id="updated"></span>　<a href="./">くじ引きページへ</a></p>
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>午前：コミュニティ紹介<small id="prog-intro"></small></h2>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-intro"></tbody></table></div>
+    </section>
+    <section class="card">
+      <h2>午後：ライトニングトーク<small id="prog-lt"></small></h2>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-lt"></tbody></table></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>くじ引き履歴（新しい順）</h2>
+    <div class="tablewrap"><table><thead><tr><th>日時</th><th>コミュニティ / 引いた人</th><th>結果</th></tr></thead><tbody id="log"></tbody></table></div>
+  </section>
+</main>
+
+<script src="common.js"></script>
+<script>
+let seen = null;
+
+async function refresh() {
+  try {
+    const state = await fetchState();
+    const keys = new Set(state.draws.map((d) => `${d.session}:${d.community_id}`));
+    const fresh = seen ? new Set([...keys].filter((k) => !seen.has(k))) : new Set();
+    seen = keys;
+    for (const session of SESSIONS) {
+      $(`order-${session}`).innerHTML = orderRowsHTML(state, session, fresh);
+      $(`prog-${session}`).textContent = progress(state, session);
+    }
+    $("log").innerHTML = logRowsHTML(state);
+    $("updated").textContent = `最終更新 ${fmt.format(new Date())}（5 秒ごとに自動更新）`;
+  } catch {
+    $("updated").textContent = "最新状態の取得に失敗しました。再試行中…";
+  }
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
