@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>テック無尽 発表順くじ引き</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  #form { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); align-items: end; }
+  .row2 { grid-column: 1 / -1; display: flex; gap: 14px; align-items: end; flex-wrap: wrap; }
+  .row2 > div { flex: 1 1 280px; }
+  .row2 > button { flex: 0 0 200px; }
+  @media (max-width: 640px) {
+    #form { grid-template-columns: 1fr; }
+    .row2 > button { flex: 1 1 100%; }
+  }
+  label { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+  input, select { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--bg); color: var(--text); width: 100%; }
+  fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 8px; }
+  fieldset label { display: flex; align-items: center; gap: 6px; color: var(--text); padding: 9px 12px;
+    border: 1px solid var(--line); border-radius: 8px; cursor: pointer; flex: 1; white-space: nowrap; }
+  fieldset label:has(input:disabled) { opacity: .45; cursor: not-allowed; text-decoration: line-through; }
+  fieldset input { width: auto; }
+  button { font: inherit; font-weight: 700; padding: 11px 16px; border: 0; border-radius: 8px;
+    background: var(--accent); color: var(--accent-text); cursor: pointer; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .msg { grid-column: 1 / -1; margin: 0; font-size: .95rem; }
+  .msg:empty { display: none; }
+  .msg.err { color: var(--err); }
+  dialog { border: 0; border-radius: 16px; padding: 32px 28px; background: var(--card); color: var(--text);
+    width: min(420px, calc(100vw - 32px)); text-align: center; max-height: calc(100vh - 32px); }
+  dialog.wide { width: min(760px, calc(100vw - 32px)); }
+  dialog h2 { margin-bottom: 4px; }
+  .actions { display: flex; gap: 12px; justify-content: center; }
+  .actions button { min-width: 140px; }
+  button.secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  .boardlabel { color: var(--muted); font-size: .85rem; margin-top: 16px !important; }
+  .resultslink { margin: -16px 0 24px; font-size: .9rem; }
+  dialog::backdrop { background: rgb(0 0 0 / .55); }
+  .sound { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--muted); cursor: pointer; }
+  .sound input { width: auto; }
+
+  .big { font-size: 5.5rem; font-weight: 800; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums;
+    margin: 8px auto; display: inline-block; min-width: 1.6em; }
+  .big.spin { color: var(--text); }
+  .big.shake { animation: shake .12s linear infinite; color: var(--muted); }
+  .big.pop { animation: pop .7s cubic-bezier(.2, 1.8, .4, 1) both;
+    text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 55%, transparent); }
+  @keyframes shake {
+    0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-3px, 1px) rotate(-4deg); }
+    50% { transform: translate(2px, -2px) rotate(3deg); } 75% { transform: translate(3px, 2px) rotate(-2deg); }
+  }
+  @keyframes pop { 0% { transform: scale(.2); opacity: 0; } 60% { transform: scale(1.35); opacity: 1; } 100% { transform: scale(1); } }
+  dialog p { margin: 4px 0; }
+  #r-status { color: var(--muted); font-size: .9rem; min-height: 1.6em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0 16px; min-height: 2.2em; }
+  .chip { width: 2.2em; height: 2.2em; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center;
+    font-weight: 700; font-size: .9rem; font-variant-numeric: tabular-nums; transition: transform .08s, background .08s; }
+  .chip.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); transform: scale(1.2); }
+  .chip.win { animation: blink .25s step-end 4; }
+  @keyframes blink { 50% { background: transparent; color: var(--text); } }
+  #r-badge { display: inline-block; font-weight: 800; color: var(--accent-text); background: var(--accent);
+    padding: 2px 12px; border-radius: 999px; margin-bottom: 6px; }
+  #r-badge:empty { display: none; }
+  #r-detail { font-weight: 700; font-size: 1.25rem; }
+  #r-meta { color: var(--muted); font-size: .9rem; margin-bottom: 20px; }
+  .fadein { animation: fadein .5s ease-out both; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } }
+  #confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
+</style>
+</head>
+<body>
+<main>
+  <h1>テック無尽 発表順くじ引き</h1>
+  <p class="lead">各コミュニティは「コミュニティ紹介（午前）」と「ライトニングトーク（午後）」をそれぞれ 1 回ずつ引けます。結果はこのページで誰でも確認できます。</p>
+  <p class="resultslink"><a href="results.html" target="_blank">途中結果だけを表示する（プロジェクター・共有用）</a></p>
+
+  <section class="card">
+    <h2>くじを引く</h2>
+    <form id="form" autocomplete="off">
+      <label>コミュニティ
+        <select id="community" required><option value="">選択してください</option></select>
+      </label>
+      <label>合言葉（運営から配布）
+        <input id="code" required maxlength="16" autocapitalize="characters" spellcheck="false">
+      </label>
+      <label>くじを引く人の名前
+        <input id="drawer" required maxlength="40">
+      </label>
+      <div class="row2">
+        <div>
+          <span style="font-size:.9rem;color:var(--muted)">どちらのくじ？</span>
+          <fieldset id="sessions">
+            <label><input type="radio" name="session" value="intro" required>紹介（午前）</label>
+            <label><input type="radio" name="session" value="lt">LT（午後）</label>
+          </fieldset>
+        </div>
+        <button id="submit" type="submit">くじを引く</button>
+        <label class="sound"><input type="checkbox" id="sound" checked>効果音</label>
+      </div>
+      <p class="msg" id="msg" role="status"></p>
+    </form>
+  </section>
+
+  <p class="updated" id="updated"></p>
+  <div class="grid2">
+    <section class="card">
+      <h2>午前：コミュニティ紹介<small id="prog-intro"></small></h2>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-intro"></tbody></table></div>
+    </section>
+    <section class="card">
+      <h2>午後：ライトニングトーク<small id="prog-lt"></small></h2>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-lt"></tbody></table></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>くじ引き履歴（新しい順）</h2>
+    <div class="tablewrap"><table><thead><tr><th>日時</th><th>コミュニティ / 引いた人</th><th>結果</th></tr></thead><tbody id="log"></tbody></table></div>
+  </section>
+</main>
+
+<dialog id="confirm" class="wide">
+  <form method="dialog">
+    <h2 tabindex="-1" autofocus>くじを引く前に確認</h2>
+    <p id="c-text"></p>
+    <p class="boardlabel">現在の途中結果</p>
+    <div class="board" id="c-board"></div>
+    <div class="actions">
+      <button value="cancel" class="secondary">やめる</button>
+      <button value="ok">くじを引く！</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="result" class="wide">
+  <canvas id="confetti"></canvas>
+  <p id="r-title"></p>
+  <p id="r-status"></p>
+  <div class="big" id="r-slot">?</div>
+  <div class="chips" id="r-chips"></div>
+  <div id="r-result" hidden>
+    <span id="r-badge"></span>
+    <p id="r-detail"></p>
+    <p id="r-meta"></p>
+    <p class="boardlabel">全体の途中結果</p>
+    <div class="board" id="r-board"></div>
+    <form method="dialog"><button>閉じる</button></form>
+  </div>
+</dialog>
+
+<script src="common.js"></script>
+<script>
+let state = { communities: [], draws: [] };
+let seen = null;
+let revealing = false;
+
+async function refresh() {
+  if (revealing) return; // 演出中に背後の表が更新されて結果がネタバレしないようにする
+  try {
+    state = await fetchState();
+    render();
+    $("updated").textContent = `最終更新 ${fmt.format(new Date())}（10 秒ごとに自動更新）`;
+  } catch {
+    $("updated").textContent = "最新状態の取得に失敗しました。再試行中…";
+  }
+}
+
+function render() {
+  const sel = $("community");
+  if (sel.options.length - 1 !== state.communities.length) {
+    const cur = sel.value;
+    sel.length = 1;
+    for (const c of state.communities) sel.add(new Option(c.name, c.id));
+    sel.value = cur;
+  }
+  updateSessionAvailability();
+
+  const keys = new Set(state.draws.map((d) => `${d.session}:${d.community_id}`));
+  const fresh = seen ? new Set([...keys].filter((k) => !seen.has(k))) : new Set();
+  seen = keys;
+
+  for (const session of SESSIONS) {
+    $(`order-${session}`).innerHTML = orderRowsHTML(state, session, fresh);
+    $(`prog-${session}`).textContent = progress(state, session);
+  }
+  $("log").innerHTML = logRowsHTML(state);
+}
+
+function updateSessionAvailability() {
+  const id = Number($("community").value);
+  for (const input of document.querySelectorAll('input[name="session"]')) {
+    const done = state.draws.some((d) => d.community_id === id && d.session === input.value);
+    input.disabled = done;
+    if (done) input.checked = false;
+  }
+}
+
+$("community").addEventListener("change", updateSessionAvailability);
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const session = document.querySelector('input[name="session"]:checked')?.value;
+  const name = $("community").selectedOptions[0]?.text;
+  if (!session) return showMsg("どちらのくじを引くか選んでください", true);
+  if (!(await confirmDraw(name, session))) return;
+
+  $("submit").disabled = true;
+  showMsg("");
+  sfx.init();
+  try {
+    const res = await fetch("/api/draw", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session, communityId: $("community").value, code: $("code").value, drawer: $("drawer").value }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      $("code").value = "";
+      await reveal(data.draw);
+    } else if (res.status === 409 && data.draw) {
+      showMsg(`${data.error}（${data.draw.slot} 番 / ${data.draw.drawer} さんが ${fmt.format(new Date(data.draw.drawn_at))} に引きました）`, true);
+    } else {
+      showMsg(data.error || "エラーが発生しました", true);
+    }
+  } catch {
+    showMsg("通信に失敗しました。履歴に反映されていないか確認してから再度お試しください", true);
+  } finally {
+    $("submit").disabled = false;
+    await refresh();
+  }
+});
+
+// くじを引く前に、最新の途中結果を見せて確認する
+async function confirmDraw(name, session) {
+  await refresh();
+  if (state.draws.some((d) => d.community_id === Number($("community").value) && d.session === session)) {
+    showMsg("このコミュニティは既にこのくじを引いています", true);
+    return false;
+  }
+  const dlg = $("confirm");
+  $("c-text").innerHTML = `<b>${esc(name)}</b> として「${LABEL[session]}」のくじを引きます。<br>くじは 1 回しか引けません。`;
+  $("c-board").innerHTML = boardHTML(state, { focus: session });
+  dlg.returnValue = "";
+  dlg.showModal();
+  await new Promise((r) => dlg.addEventListener("close", r, { once: true }));
+  return dlg.returnValue === "ok";
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function reveal(d) {
+  const dlg = $("result"), big = $("r-slot"), chips = $("r-chips"), status = $("r-status");
+  const total = state.communities.length || 13;
+  const taken = new Set(state.draws.filter((x) => x.session === d.session && x.slot !== d.slot).map((x) => x.slot));
+  const free = [];
+  for (let s = 1; s <= total; s++) if (!taken.has(s)) free.push(s);
+  if (!free.includes(d.slot)) free.push(d.slot);
+
+  $("r-title").textContent = `${d.community}｜${LABEL[d.session]}`;
+  $("r-result").hidden = true;
+  chips.hidden = false;
+  big.className = "big";
+  big.textContent = "?";
+  chips.innerHTML = free.map((s) => `<span class="chip" data-slot="${s}">${s}</span>`).join("");
+  revealing = true;
+  dlg.showModal();
+
+  try {
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // 1. シャッフル（ドラムロール）
+      status.textContent = `${d.drawer} さんがくじを引いています…`;
+      big.classList.add("shake");
+      for (let t = 0; t < 1400; t += 45) { sfx.roll(); await sleep(45); }
+      big.classList.remove("shake");
+
+      // 2. ルーレット：空き枠を順に照らし、だんだん減速して当選枠で止める
+      status.textContent = free.length > 1 ? `残り ${free.length} 枠から抽選中…` : "残りは 1 枠…！";
+      big.classList.add("spin");
+      const els = [...chips.children];
+      const target = free.indexOf(d.slot);
+      const laps = Math.max(2, Math.ceil(24 / free.length));
+      const steps = laps * free.length + target;
+      for (let i = 0; i <= steps; i++) {
+        const idx = i % free.length;
+        els.forEach((el, j) => el.classList.toggle("on", j === idx));
+        big.textContent = free[idx];
+        sfx.tick(i / steps);
+        await sleep(35 + 320 * (i / steps) ** 3);
+      }
+
+      // 3. 溜め
+      status.textContent = "決定…！";
+      els[target].classList.add("win");
+      await sleep(700);
+    }
+
+    // 4. 発表
+    big.classList.remove("spin");
+    big.textContent = d.slot;
+    void big.offsetWidth; // アニメーションを確実に再生させる
+    big.classList.add("pop");
+    status.textContent = "";
+    $("r-badge").textContent = d.slot === 1 ? "トップバッター！" : d.slot === total ? "大トリ！" : "";
+    $("r-detail").textContent = `${d.slot} 番目に決定！`;
+    $("r-meta").textContent = `${d.drawer} さん・${fmt.format(new Date(d.drawn_at))}`;
+    $("r-result").hidden = false;
+    $("r-result").className = "fadein";
+    sfx.fanfare();
+    confetti();
+  } finally {
+    revealing = false;
+  }
+  // 発表後に最新の全体結果を表示（他コミュニティの結果も反映）
+  await refresh();
+  chips.hidden = true;
+  $("r-board").innerHTML = boardHTML(state, { focus: d.session, highlight: d });
+}
+
+$("result").addEventListener("cancel", (e) => { if (revealing) e.preventDefault(); });
+
+// ---- 効果音（WebAudio で合成。音声ファイル不要）
+const sfx = (() => {
+  let ctx = null;
+  const on = () => ctx && $("sound").checked;
+  function tone(freq, start, dur, type = "triangle", vol = 0.12) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
+    o.connect(g).connect(ctx.destination);
+    o.start(ctx.currentTime + start); o.stop(ctx.currentTime + start + dur + 0.02);
+  }
+  return {
+    init() {
+      try { ctx ??= new AudioContext(); ctx.resume(); } catch { ctx = null; }
+    },
+    roll() { if (on()) tone(90 + Math.random() * 60, 0, 0.05, "square", 0.05); },
+    tick(progress) { if (on()) tone(900 + progress * 500, 0, 0.04, "square", 0.06); },
+    fanfare() {
+      if (!on()) return;
+      [[523, 0], [659, 0.1], [784, 0.2], [1047, 0.32]].forEach(([f, t]) => tone(f, t, 0.18));
+      [523, 659, 784, 1047].forEach((f) => tone(f, 0.5, 0.9, "triangle", 0.08));
+    },
+  };
+})();
+
+// ---- 紙吹雪
+function confetti() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = $("confetti"), c = cv.getContext("2d");
+  const dpr = devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+  c.scale(dpr, dpr);
+  const colors = ["#f97316", "#facc15", "#22c55e", "#3b82f6", "#ec4899", "#a855f7"];
+  // 画面下の左右からクラッカーのように打ち上げる
+  const power = Math.sqrt(innerHeight) * 0.9;
+  const parts = Array.from({ length: 200 }, (_, i) => {
+    const left = i % 2 === 0;
+    return {
+    x: left ? 0 : innerWidth, y: innerHeight,
+    vx: (left ? 1 : -1) * (2 + Math.random() * power * 0.35), vy: -(power * 0.55 + Math.random() * power * 0.45),
+    w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
+    r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    };
+  });
+  const t0 = performance.now();
+  (function frame(now) {
+    c.clearRect(0, 0, innerWidth, innerHeight);
+    for (const p of parts) {
+      p.vy += 0.35; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.color;
+      c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.r * 2)));
+      c.restore();
+    }
+    if (now - t0 < 3500) requestAnimationFrame(frame);
+    else c.clearRect(0, 0, innerWidth, innerHeight);
+  })(t0);
+}
+
+function showMsg(text, isErr = false) {
+  $("msg").textContent = text;
+  $("msg").className = "msg" + (isErr ? " err" : "");
+}
+
+try { $("sound").checked = localStorage.getItem("sound") !== "off"; } catch {}
+$("sound").addEventListener("change", () => {
+  try { localStorage.setItem("sound", $("sound").checked ? "on" : "off"); } catch {}
+});
+
+refresh();
+setInterval(refresh, 10000);
+</script>
+</body>
+</html>
