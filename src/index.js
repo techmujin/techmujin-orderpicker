@@ -21,7 +21,7 @@ export default {
 
 async function getState(db) {
   const [communities, draws] = await db.batch([
-    db.prepare("SELECT id, name FROM communities ORDER BY id"),
+    db.prepare("SELECT id, name, in_lt FROM communities ORDER BY id"),
     db.prepare(
       `SELECT d.session, d.community_id, c.name AS community, d.slot, d.drawer, d.drawn_at
          FROM draws d JOIN communities c ON c.id = d.community_id
@@ -52,14 +52,23 @@ async function handleDraw(request, db) {
   }
 
   const community = await db
-    .prepare("SELECT id, name, code_hash FROM communities WHERE id = ?")
+    .prepare("SELECT id, name, code_hash, in_lt FROM communities WHERE id = ?")
     .bind(communityId)
     .first();
   if (!community || community.code_hash !== (await sha256(code))) {
     return json({ error: "コミュニティまたは合言葉が正しくありません" }, 403);
   }
 
-  const total = (await db.prepare("SELECT COUNT(*) AS n FROM communities").first()).n;
+  if (session === "lt" && !community.in_lt) {
+    return json({ error: "このコミュニティはライトニングトークに参加しません" }, 403);
+  }
+
+  // 枠の数 = そのセッションに参加するコミュニティの数（午前は全コミュニティ、午後は LT 参加分のみ）
+  const total = (
+    await db
+      .prepare(`SELECT COUNT(*) AS n FROM communities${session === "lt" ? " WHERE in_lt = 1" : ""}`)
+      .first()
+  ).n;
 
   // 同時に引かれた場合は UNIQUE(session, slot) 違反になるので、空き枠を取り直して再試行する
   for (let attempt = 0; attempt < 20; attempt++) {
