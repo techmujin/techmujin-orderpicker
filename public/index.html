@@ -71,7 +71,12 @@
     padding: 2px 12px; border-radius: 999px; margin-bottom: 6px; }
   #r-badge:empty { display: none; }
   #r-detail { font-weight: 700; font-size: 1.25rem; }
-  #r-meta { color: var(--muted); font-size: .9rem; margin-bottom: 20px; }
+  #r-meta { color: var(--muted); font-size: .9rem; margin-bottom: 16px; }
+  .share { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 8px; }
+  .share a, .share button { font: inherit; font-size: .9rem; font-weight: 700; padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; color: var(--text); text-decoration: none; cursor: pointer; }
+  .share #share-native { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .share-label { color: var(--muted); font-size: .85rem; }
   .fadein { animation: fadein .5s ease-out both; }
   @keyframes fadein { from { opacity: 0; transform: translateY(6px); } }
   #confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
@@ -133,6 +138,13 @@
     <span id="r-badge"></span>
     <p id="r-detail"></p>
     <p id="r-meta"></p>
+    <p class="share-label">結果をシェアする</p>
+    <div class="share">
+      <button type="button" id="share-native" hidden>共有…</button>
+      <a id="share-x" target="_blank" rel="noopener">X でポスト</a>
+      <a id="share-bsky" target="_blank" rel="noopener">Bluesky</a>
+      <button type="button" id="share-copy">テキストをコピー</button>
+    </div>
     <p class="boardlabel">全体の途中結果</p>
     <div class="board" id="r-board"></div>
     <form method="dialog"><button>閉じる</button></form>
@@ -286,6 +298,7 @@ async function reveal(d) {
     $("r-badge").textContent = d.slot === 1 ? "トップバッター！" : d.slot === total ? "大トリ！" : "";
     $("r-detail").textContent = `${d.slot} 番目に決定！`;
     $("r-meta").textContent = fmt.format(new Date(d.drawn_at));
+    setupShare(d, total);
     $("r-result").hidden = false;
     $("r-result").className = "fadein";
     confetti();
@@ -333,6 +346,34 @@ function confetti() {
     else c.clearRect(0, 0, innerWidth, innerHeight);
   })(t0);
 }
+
+// ---- 結果のシェア。リンク先 /s/{session}/{community} は実際の結果のカード画像を OGP に持つ
+const HASHTAG = "テック無尽";
+let shareData = null;
+
+function setupShare(d, total) {
+  const badge = d.slot === 1 ? " トップバッター！" : d.slot === total ? " 大トリ！" : "";
+  const text = `${d.community} はテック無尽の「${LABEL[d.session]}」で ${d.slot} 番目に決定！${badge}\n#${HASHTAG}`;
+  const url = new URL(`/s/${d.session}/${d.community_id}`, location.origin).href;
+  shareData = { title: "テック無尽 発表順くじ引き", text, url };
+  $("share-x").href = `https://x.com/intent/post?${new URLSearchParams({ text, url })}`;
+  $("share-bsky").href = `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${text}\n${url}` })}`;
+  $("share-native").hidden = !navigator.share;
+  $("share-copy").textContent = "テキストをコピー";
+}
+
+$("share-native").addEventListener("click", async () => {
+  try { await navigator.share(shareData); } catch { /* キャンセル時は何もしない */ }
+});
+
+$("share-copy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+    $("share-copy").textContent = "コピーしました ✓";
+  } catch {
+    $("share-copy").textContent = "コピーできませんでした";
+  }
+});
 
 function showMsg(text, isErr = false) {
   $("msg").textContent = text;

@@ -14,6 +14,8 @@ Cloudflare Workers + D1 + Static Assets で動き、すべて無料枠の範囲�
 - トップページはくじ引きフォームのみのシンプルな構成。全体の結果は `/results.html` で確認する
 - `/results.html` は発表順（順番とコミュニティ）と、誰がいつ引いたかの履歴を表示するページ（ページ読み込み時に最新化。プロジェクター投影や URL 共有用）
 - 合言葉は DB に SHA-256 ハッシュでのみ保存
+- くじを引いた後に結果をシェアできる（スマホの共有メニュー / X / Bluesky / テキストコピー）。
+  シェア用 URL `/s/{session}/{communityId}` は、実際に引いた結果のカード画像を OGP に設定する
 
 ## セットアップ
 
@@ -39,9 +41,11 @@ npx wrangler d1 create orderpicker   # 表示された database_id を wrangler.
    npm run db:seed:remote
    ```
 4. デプロイ: `npm run deploy` → `https://techmujin-orderpicker.<account>.workers.dev`
+   （デプロイ前に `npm run og` が自動で走り、シェア用カード画像を `public/og/` に生成する。
+   初回はブラウザが必要なので `npx playwright-core install chromium-headless-shell` を実行しておく）
 5. `codes.csv` の合言葉を各コミュニティ代表へ個別に連絡
 
-ローカル確認は `db:migrate:local` / `db:seed:local` のあと `npm run dev`。
+ローカル確認は `db:migrate:local` / `db:seed:local` / `og` のあと `npm run dev`。
 
 ## 運用メモ
 
