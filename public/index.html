@@ -237,7 +237,7 @@ $("form").addEventListener("submit", async (e) => {
       showMsg(data.error || "エラーが発生しました", true);
     }
   } catch {
-    showMsg("通信に失敗しました。履歴に反映されていないか確認してから再度お試しください", true);
+    showMsg("通信に失敗しました。途中結果ページで反映されていないか確認してから、もう一度お試しください", true);
   } finally {
     $("submit").disabled = false;
     await refresh();

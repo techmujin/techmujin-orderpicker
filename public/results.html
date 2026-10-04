@@ -64,7 +64,7 @@ async function load() {
       $(`prog-${session}`).textContent = progress(state, session);
     }
     $("log").innerHTML = logRowsHTML(state, { showDrawer: true });
-    $("updated").textContent = `最終更新 ${fmt.format(new Date())}（最新の状態はページを再読み込みすると表示されます）`;
+    $("updated").textContent = `最終更新 ${fmt.format(new Date())}`;
   } catch {
     $("updated").textContent = "最新状態の取得に失敗しました。ページを再読み込みしてください";
   }
