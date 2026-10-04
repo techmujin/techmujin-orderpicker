@@ -40,6 +40,9 @@
   dialog.wide { width: min(760px, calc(100vw - 32px)); }
   dialog h2 { margin-bottom: 4px; }
   .actions { display: flex; gap: 12px; justify-content: center; }
+  /* ダイアログの中身が長くてもボタンが常に見えるよう、下端に固定する */
+  .actions.sticky { position: sticky; bottom: -32px; margin: 0 -28px -32px; padding: 20px 28px 24px;
+    background: linear-gradient(to bottom, transparent, var(--card) 18px); }
   .actions button { min-width: 140px; }
   button.secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
   .boardlabel { color: var(--muted); font-size: .85rem; margin-top: 16px !important; }
@@ -127,7 +130,7 @@
     <p id="c-text"></p>
     <p class="boardlabel">現在の途中結果</p>
     <div class="board" id="c-board"></div>
-    <div class="actions">
+    <div class="actions sticky">
       <button value="cancel" class="secondary">やめる</button>
       <button value="ok">くじを引く！</button>
     </div>
@@ -145,20 +148,20 @@
     <p id="r-detail"></p>
     <p id="r-meta"></p>
     <p class="share-label">結果をシェアする</p>
-    <div class="share-preview">
-      <img id="share-img" alt="シェアされるカード画像" width="1200" height="630">
-      <p id="share-text"></p>
-      <p class="url" id="share-url"></p>
-    </div>
     <div class="share">
       <button type="button" id="share-native" hidden>共有…</button>
       <a id="share-x" target="_blank" rel="noopener">X でポスト</a>
       <a id="share-bsky" target="_blank" rel="noopener">Bluesky</a>
       <button type="button" id="share-copy">テキストをコピー</button>
     </div>
+    <div class="share-preview">
+      <img id="share-img" alt="シェアされるカード画像" width="1200" height="630">
+      <p id="share-text"></p>
+      <p class="url" id="share-url"></p>
+    </div>
     <p class="boardlabel">全体の途中結果</p>
     <div class="board" id="r-board"></div>
-    <form method="dialog"><button>閉じる</button></form>
+    <form method="dialog" class="actions sticky"><button>閉じる</button></form>
   </div>
 </dialog>
 
