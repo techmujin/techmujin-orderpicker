@@ -124,7 +124,7 @@ async function sharePage(db, url, session, communityId) {
     ).n;
     const badge = draw.slot === 1 ? "トップバッター！" : draw.slot === total ? "大トリ！" : "";
     title = `${draw.community} は「${SESSION_LABEL[session]}」で ${draw.slot} 番目に決定！${badge && ` ${badge}`}`;
-    description = `テック無尽の発表順くじ引きの結果です（${draw.slot} / ${total}）。全体の途中結果はこちらから。`;
+    description = `テック無尽の発表順くじ引きの結果です（${draw.slot} / ${total}）。`;
     image = `/og/${session}-${communityId}-${draw.slot}.jpg`;
   }
   const abs = (path) => new URL(path, url.origin).href;
@@ -148,7 +148,7 @@ async function sharePage(db, url, session, communityId) {
 <style>
   main { max-width: 760px; text-align: center; }
   img { width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 0 20px; }
-  .links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; font-size: .9rem; }
 </style>
 </head>
 <body>
@@ -156,8 +156,13 @@ async function sharePage(db, url, session, communityId) {
   <h1>${esc(title)}</h1>
   <p class="lead">${esc(description)}</p>
   <img src="${esc(image)}" alt="${esc(title)}" width="1200" height="630">
-  <p class="links"><a href="/results.html">途中結果を見る →</a><a href="/">くじ引きページへ</a></p>
+  <p><a class="cta" href="https://techmujin.jp" target="_blank" rel="noopener">テック無尽 2026 について見る →</a></p>
+  <p class="links"><a href="/results.html">途中結果を見る</a><a href="/">くじ引きページへ</a></p>
 </main>
+<footer class="site-footer">
+  <a href="https://techmujin.jp" target="_blank" rel="noopener">テック無尽 2026 公式サイト</a>
+  <span>山梨ITコミュニティ合同イベント</span>
+</footer>
 </body>
 </html>`;
   return new Response(html, {

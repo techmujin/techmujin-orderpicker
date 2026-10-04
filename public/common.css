@@ -33,6 +33,13 @@ td.slot { font-weight: 700; width: 3em; font-variant-numeric: tabular-nums; }
 td.empty { color: var(--muted); }
 .tablewrap { overflow-x: auto; }
 
+/* 公式サイトへの誘導 */
+.site-footer { max-width: 1040px; margin: 0 auto; padding: 8px 16px 40px; text-align: center; font-size: .85rem; color: var(--muted); }
+.site-footer a { font-weight: 700; }
+.site-footer span { display: block; margin-top: 2px; }
+.cta { display: inline-block; padding: 12px 24px; border-radius: 999px; background: var(--accent); color: var(--accent-text);
+  font-weight: 700; text-decoration: none; }
+
 /* ダイアログ内のコンパクトな途中結果 */
 .board { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); text-align: left; margin: 12px 0 20px; }
 .board h3 { font-size: .95rem; margin: 0 0 4px; }
