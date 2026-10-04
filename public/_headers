@@ -1,0 +1,3 @@
+# 検索エンジンにインデックスさせない（robots.txt と併用）
+/*
+  X-Robots-Tag: noindex, nofollow

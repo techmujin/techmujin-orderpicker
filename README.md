@@ -14,6 +14,9 @@ Cloudflare Workers + D1 + Static Assets で動き、すべて無料枠の範囲�
 - トップページはくじ引きフォームのみのシンプルな構成。全体の結果は `/results.html` で確認する
 - `/results.html` は発表順（順番とコミュニティ）と、誰がいつ引いたかの履歴を表示するページ（ページ読み込み時に最新化。プロジェクター投影や URL 共有用）
 - 合言葉は DB に SHA-256 ハッシュでのみ保存
+- 検索結果には表示しない: `public/robots.txt` で検索エンジンなどのクローラーを拒否し（SNS のリンクプレビュー用ボットは許可）、
+  全レスポンスに `X-Robots-Tag: noindex, nofollow`（静的ファイルは `public/_headers`、Worker の応答はコード内）と
+  HTML の `<meta name="robots">` を付ける
 - くじを引いた後に結果をシェアできる（スマホの共有メニュー / X / Bluesky / テキストコピー）。
   シェア用 URL `/s/{session}/{communityId}` は、実際に引いた結果のカード画像を OGP に設定する
 

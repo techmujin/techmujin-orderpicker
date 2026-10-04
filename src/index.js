@@ -1,6 +1,8 @@
 const SESSIONS = ["intro", "lt"];
 const SESSION_LABEL = { intro: "コミュニティ紹介（午前）", lt: "ライトニングトーク（午後）" };
 const MAX_DRAWER_LENGTH = 40;
+// 検索エンジンにインデックスさせない（静的ファイルは public/_headers で同じヘッダーを付ける）
+const NOINDEX = { "x-robots-tag": "noindex, nofollow" };
 
 export default {
   async fetch(request, env) {
@@ -133,6 +135,7 @@ async function sharePage(db, url, session, communityId) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <meta property="og:type" content="website">
@@ -167,6 +170,7 @@ async function sharePage(db, url, session, communityId) {
 </html>`;
   return new Response(html, {
     headers: {
+      ...NOINDEX,
       "content-type": "text/html; charset=utf-8",
       // 引いた結果は変わらないので少しキャッシュする。未抽選の間は結果が変わるのでキャッシュしない
       "cache-control": draw ? "public, max-age=300" : "no-store",
@@ -223,6 +227,6 @@ async function sha256(text) {
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+    headers: { ...NOINDEX, "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
   });
 }

@@ -1,0 +1,11 @@
+# このサイトは検索結果に表示しない。
+# ただし SNS でシェアしたときのリンクプレビュー（カード画像）を作るボットは許可する。
+User-agent: Twitterbot
+User-agent: facebookexternalhit
+User-agent: Slackbot-LinkExpanding
+User-agent: Discordbot
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: *
+Disallow: /
