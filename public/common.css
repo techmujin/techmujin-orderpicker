@@ -25,15 +25,12 @@ p.lead { color: var(--muted); margin: 0 0 24px; }
 .grid2 { margin-bottom: 24px; display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .nowrap { white-space: nowrap; }
 .sub { color: var(--muted); font-size: .8rem; display: block; }
-.updated { color: var(--muted); font-size: .8rem; text-align: right; margin-top: -12px; margin-bottom: 12px; }
 
 table { width: 100%; border-collapse: collapse; font-size: .92rem; }
 th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { color: var(--muted); font-weight: 600; font-size: .8rem; }
 td.slot { font-weight: 700; width: 3em; font-variant-numeric: tabular-nums; }
 td.empty { color: var(--muted); }
-tr.fresh td { animation: flash 2.4s ease-out; }
-@keyframes flash { from { background: color-mix(in srgb, var(--accent) 30%, transparent); } to { background: transparent; } }
 .tablewrap { overflow-x: auto; }
 
 /* ダイアログ内のコンパクトな途中結果 */

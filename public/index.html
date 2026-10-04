@@ -6,14 +6,9 @@
 <title>テック無尽 発表順くじ引き</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  #form { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); align-items: end; }
-  .row2 { grid-column: 1 / -1; display: flex; gap: 14px; align-items: end; flex-wrap: wrap; }
-  .row2 > div { flex: 1 1 280px; }
-  .row2 > button { flex: 0 0 200px; }
-  @media (max-width: 640px) {
-    #form { grid-template-columns: 1fr; }
-    .row2 > button { flex: 1 1 100%; }
-  }
+  main { max-width: 560px; }
+  #form { display: grid; gap: 16px; }
+  #form > button { margin-top: 4px; }
   label { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
   input, select { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
     background: var(--bg); color: var(--text); width: 100%; }
@@ -38,7 +33,7 @@
   .actions button { min-width: 140px; }
   button.secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
   .boardlabel { color: var(--muted); font-size: .85rem; margin-top: 16px !important; }
-  .resultslink { margin: -16px 0 24px; font-size: .9rem; }
+  .resultslink { text-align: center; margin: 0; }
   .notice { margin: 0 0 24px; padding: 12px 16px; border-left: 4px solid var(--accent); border-radius: 8px;
     background: var(--hl); }
   dialog::backdrop { background: rgb(0 0 0 / .55); }
@@ -75,12 +70,10 @@
 <body>
 <main>
   <h1>テック無尽 発表順くじ引き</h1>
-  <p class="lead">「コミュニティ紹介（午前）」は全コミュニティが、「ライトニングトーク（午後）」は LT に参加するコミュニティのみが、それぞれ 1 回ずつくじを引けます。結果はこのページで誰でも確認できます。</p>
-  <p class="resultslink"><a href="results.html" target="_blank">途中結果を表示する（くじを引いた人の名前つき・プロジェクター／共有用）</a></p>
+  <p class="lead">午前のコミュニティ紹介は全コミュニティ、午後の LT は参加コミュニティのみが、それぞれ 1 回ずつくじを引けます。</p>
   <p class="notice"><strong>くじ引きの締め切りは 10月31日（土）です。</strong>期日までにくじを引かなかった場合、そのコミュニティの発表順は運営で決定します。</p>
 
   <section class="card">
-    <h2>くじを引く</h2>
     <form id="form" autocomplete="off">
       <label>コミュニティ
         <select id="community" required><option value="">選択してください</option></select>
@@ -91,37 +84,20 @@
       <label>くじを引く人の名前（ハンドルネーム可）
         <input id="drawer" required maxlength="40">
       </label>
-      <div class="row2">
-        <div>
-          <span style="font-size:.9rem;color:var(--muted)">どちらのくじ？</span>
-          <fieldset id="sessions">
-            <label><input type="radio" name="session" value="intro" required>紹介（午前）</label>
-            <label><input type="radio" name="session" value="lt">LT（午後）</label>
-          </fieldset>
-          <p class="hint" id="session-hint"></p>
-        </div>
-        <button id="submit" type="submit">くじを引く</button>
+      <div>
+        <span style="font-size:.9rem;color:var(--muted)">どちらのくじ？</span>
+        <fieldset id="sessions">
+          <label><input type="radio" name="session" value="intro" required>紹介（午前）</label>
+          <label><input type="radio" name="session" value="lt">LT（午後）</label>
+        </fieldset>
+        <p class="hint" id="session-hint"></p>
       </div>
+      <button id="submit" type="submit">くじを引く</button>
       <p class="msg" id="msg" role="status"></p>
     </form>
   </section>
 
-  <p class="updated" id="updated"></p>
-  <div class="grid2">
-    <section class="card">
-      <h2>午前：コミュニティ紹介<small id="prog-intro"></small></h2>
-      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>日時</th></tr></thead><tbody id="order-intro"></tbody></table></div>
-    </section>
-    <section class="card">
-      <h2>午後：ライトニングトーク<small id="prog-lt"></small></h2>
-      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>日時</th></tr></thead><tbody id="order-lt"></tbody></table></div>
-    </section>
-  </div>
-
-  <section class="card">
-    <h2>くじ引き履歴（新しい順）</h2>
-    <div class="tablewrap"><table><thead><tr><th>日時</th><th>コミュニティ</th><th>結果</th></tr></thead><tbody id="log"></tbody></table></div>
-  </section>
+  <p class="resultslink"><a href="results.html">途中結果を見る →</a></p>
 </main>
 
 <dialog id="confirm" class="wide">
@@ -156,21 +132,16 @@
 <script src="common.js"></script>
 <script>
 let state = { communities: [], draws: [] };
-let seen = null;
 let revealing = false;
 
+// コミュニティ一覧と抽選状況を取得する（ページ読み込み時、くじを引く前後）
 async function refresh() {
-  if (revealing) return; // 演出中に背後の表が更新されて結果がネタバレしないようにする
   try {
     state = await fetchState();
-    render();
-    $("updated").textContent = `最終更新 ${fmt.format(new Date())}（最新の状態はページを再読み込みすると表示されます）`;
   } catch {
-    $("updated").textContent = "最新状態の取得に失敗しました。ページを再読み込みしてください";
+    showMsg("最新状態の取得に失敗しました。ページを再読み込みしてください", true);
+    return;
   }
-}
-
-function render() {
   const sel = $("community");
   if (sel.options.length - 1 !== state.communities.length) {
     const cur = sel.value;
@@ -179,16 +150,6 @@ function render() {
     sel.value = cur;
   }
   updateSessionAvailability();
-
-  const keys = new Set(state.draws.map((d) => `${d.session}:${d.community_id}`));
-  const fresh = seen ? new Set([...keys].filter((k) => !seen.has(k))) : new Set();
-  seen = keys;
-
-  for (const session of SESSIONS) {
-    $(`order-${session}`).innerHTML = orderRowsHTML(state, session, { fresh });
-    $(`prog-${session}`).textContent = progress(state, session);
-  }
-  $("log").innerHTML = logRowsHTML(state);
 }
 
 function updateSessionAvailability() {
