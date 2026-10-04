@@ -26,11 +26,11 @@
   <div class="grid2">
     <section class="card">
       <h2>午前：コミュニティ紹介<small id="prog-intro"></small></h2>
-      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-intro"></tbody></table></div>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th></tr></thead><tbody id="order-intro"></tbody></table></div>
     </section>
     <section class="card">
       <h2>午後：ライトニングトーク<small id="prog-lt"></small></h2>
-      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th><th>引いた人 / 日時</th></tr></thead><tbody id="order-lt"></tbody></table></div>
+      <div class="tablewrap"><table><thead><tr><th>順</th><th>コミュニティ</th></tr></thead><tbody id="order-lt"></tbody></table></div>
     </section>
   </div>
 
@@ -46,7 +46,7 @@ async function load() {
   try {
     const state = await fetchState();
     for (const session of SESSIONS) {
-      $(`order-${session}`).innerHTML = orderRowsHTML(state, session, { showDrawer: true });
+      $(`order-${session}`).innerHTML = orderRowsHTML(state, session);
       $(`prog-${session}`).textContent = progress(state, session);
     }
     $("log").innerHTML = logRowsHTML(state, { showDrawer: true });

@@ -26,21 +26,20 @@ function progress(state, session) {
   return `${state.draws.filter((d) => d.session === session).length} / ${slotCount(state, session)} 確定`;
 }
 
-// 引いた人の名前は results.html でのみ表示する（showDrawer: true）
-
-// 順番表（tbody の中身）
-function orderRowsHTML(state, session, { showDrawer = false } = {}) {
+// 順番表（tbody の中身）。順番とコミュニティのみ
+function orderRowsHTML(state, session) {
   const map = bySlot(state, session);
   const rows = [];
   for (let s = 1; s <= slotCount(state, session); s++) {
     const d = map.get(s);
     rows.push(d
-      ? `<tr><td class="slot">${s}</td><td>${esc(d.community)}</td><td>${showDrawer ? `${esc(d.drawer)}<span class="sub">` : `<span class="nowrap">`}${fmt.format(new Date(d.drawn_at))}</span></td></tr>`
-      : `<tr><td class="slot">${s}</td><td class="empty" colspan="2">未確定</td></tr>`);
+      ? `<tr><td class="slot">${s}</td><td>${esc(d.community)}</td></tr>`
+      : `<tr><td class="slot">${s}</td><td class="empty">未確定</td></tr>`);
   }
   return rows.join("");
 }
 
+// くじ引き履歴。引いた人の名前は results.html でのみ表示する（showDrawer: true）
 function logRowsHTML(state, { showDrawer = false } = {}) {
   return [...state.draws].reverse().map((d) =>
     `<tr><td class="nowrap">${fmt.format(new Date(d.drawn_at))}</td><td>${esc(d.community)}${showDrawer ? `<span class="sub">${esc(d.drawer)}</span>` : ""}</td><td class="nowrap">${d.session === "intro" ? "紹介" : "LT"} <b>${d.slot} 番</b></td></tr>`
