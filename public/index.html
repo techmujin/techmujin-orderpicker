@@ -162,9 +162,12 @@ function updateSessionAvailability() {
     input.disabled = done || notInLt;
     if (input.disabled) input.checked = false;
     if (notInLt) hints.push("このコミュニティは LT に参加しないため、LT のくじはありません");
-    else if (done) hints.push(`${input.value === "intro" ? "紹介" : "LT"} のくじは引き済みです`);
+    else if (done) hints.push(`${input.value === "intro" ? "紹介" : "LT"}のくじは引き済みです`);
   }
-  $("session-hint").textContent = hints.join(" / ");
+  // 引けるくじが残っていないコミュニティではボタンを押せないようにする
+  const nothingLeft = community && [...document.querySelectorAll('input[name="session"]')].every((i) => i.disabled);
+  $("submit").disabled = Boolean(nothingLeft);
+  $("session-hint").textContent = nothingLeft ? "このコミュニティが引けるくじはすべて引き済みです" : hints.join(" / ");
 }
 
 $("community").addEventListener("change", updateSessionAvailability);
