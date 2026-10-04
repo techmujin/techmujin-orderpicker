@@ -4,8 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "predeploy": "npm run og",
     "deploy": "wrangler deploy",
     "seed": "node scripts/gen-seed.mjs",
+    "og": "node scripts/gen-og.mjs",
     "db:migrate:local": "wrangler d1 migrations apply orderpicker --local",
     "db:migrate:remote": "wrangler d1 migrations apply orderpicker --remote",
     "db:seed:local": "wrangler d1 execute orderpicker --local --file seed.sql",
@@ -14,6 +16,7 @@
     "db:reset-draws:remote": "wrangler d1 execute orderpicker --remote --command \"DELETE FROM draws\""
   },
   "devDependencies": {
+    "playwright-core": "^1.63.0",
     "wrangler": "^4.0.0"
   }
 }

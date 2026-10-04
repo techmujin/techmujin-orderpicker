@@ -3,3 +3,5 @@ node_modules/
 # 各コミュニティの合言葉を含むため絶対にコミットしない
 seed.sql
 codes.csv
+# npm run og で communities.json から生成する
+public/og/
