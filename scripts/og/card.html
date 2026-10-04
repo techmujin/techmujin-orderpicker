@@ -34,6 +34,10 @@
   .dot { width: 14px; height: 14px; border-radius: 50%; }
   .bar .title { margin-left: 14px; font: 500 18px var(--mono); color: var(--muted); letter-spacing: .02em; }
   .body { flex: 1; padding: 26px 40px 28px; display: flex; flex-direction: column; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+  .logo { flex: none; height: 84px; }
+  .logo.big { height: 120px; }
+  .logo svg { height: 100%; width: auto; display: block; }
   .cmd { font: 500 26px/1.5 var(--mono); color: var(--muted); white-space: nowrap; }
   .cmd .p { color: var(--green); font-weight: 700; }
   .cmd .k { color: var(--text); }
@@ -82,23 +86,60 @@ function fit(el, min) {
   }
 }
 
+// イベントロゴ（SVG 文字列）。setLogo で一度だけ設定する
+let logo = "";
+
+// ロゴ SVG の余白を除くため、描画部分（path）の範囲に viewBox を合わせる
+window.setLogo = (svgText) => {
+  const holder = document.createElement("div");
+  holder.style.cssText = "position:absolute;left:-9999px;width:1000px;height:1000px";
+  holder.innerHTML = svgText.replace(/^[\s\S]*?(?=<svg)/, "");
+  document.body.append(holder);
+  const svg = holder.querySelector("svg");
+  const inv = svg.getScreenCTM().inverse();
+  let [l, t, r, b] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const el of svg.querySelectorAll("path, polygon, rect:not([style*='fill-opacity:0']), circle, ellipse, text")) {
+    const rc = el.getBoundingClientRect();
+    if (!rc.width && !rc.height) continue;
+    for (const [x, y] of [[rc.left, rc.top], [rc.right, rc.bottom]]) {
+      const pt = new DOMPoint(x, y).matrixTransform(inv);
+      l = Math.min(l, pt.x); t = Math.min(t, pt.y); r = Math.max(r, pt.x); b = Math.max(b, pt.y);
+    }
+  }
+  svg.setAttribute("viewBox", `${l} ${t} ${r - l} ${b - t}`);
+  svg.removeAttribute("width");
+  svg.removeAttribute("height");
+  logo = svg.outerHTML;
+  holder.remove();
+};
+
 // data: { kind: "result", session, sessionLabel, community, slot, total, badge } または { kind: "default", ... }
 window.render = (data) => {
   const body = document.getElementById("body");
   if (data.kind === "default") {
     body.innerHTML = `
-      <div class="cmd"><span class="p">$</span> <span class="k">techmujin</span> draw <span class="f">--all</span></div>
-      <div class="ok">✔ ${data.communities} communities · 2 sessions</div>
+      <div class="head">
+        <div>
+          <div class="cmd"><span class="p">$</span> <span class="k">techmujin</span> draw <span class="f">--all</span></div>
+          <div class="ok">✔ ${data.communities} communities · 2 sessions</div>
+        </div>
+        <div class="logo big">${logo}</div>
+      </div>
       <div class="main"><div class="info">
         <div class="hero">発表順<em>くじ引き</em></div>
         <div class="lede">コミュニティ紹介（午前）<span>${data.introSlots} 枠</span> ／ ライトニングトーク（午後）<span>${data.ltSlots} 枠</span></div>
       </div></div>
-      <div class="foot"><b>テック無尽</b><span>#テック無尽<span class="cursor"></span></span></div>`;
+      <div class="foot"><b></b><span>#テック無尽<span class="cursor"></span></span></div>`;
     return;
   }
   body.innerHTML = `
-    <div class="cmd"><span class="p">$</span> <span class="k">techmujin</span> draw <span class="f">--session</span> ${esc(data.session)}</div>
-    <div class="ok">✔ 抽選完了</div>
+    <div class="head">
+      <div>
+        <div class="cmd"><span class="p">$</span> <span class="k">techmujin</span> draw <span class="f">--session</span> ${esc(data.session)}</div>
+        <div class="ok">✔ 抽選完了</div>
+      </div>
+      <div class="logo">${logo}</div>
+    </div>
     <div class="main">
       <div class="num">${String(data.slot).padStart(2, "0")}<small>/${data.total}</small></div>
       <div class="info">
@@ -107,7 +148,7 @@ window.render = (data) => {
         <div class="badge">${esc(data.badge || "")}</div>
       </div>
     </div>
-    <div class="foot"><b>テック無尽</b><span>#テック無尽<span class="cursor"></span></span></div>`;
+    <div class="foot"><b>発表順くじ引き</b><span>#テック無尽<span class="cursor"></span></span></div>`;
   fit(document.getElementById("community"), 30);
 };
 </script>
