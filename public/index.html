@@ -77,6 +77,12 @@
     border: 1px solid var(--line); background: transparent; color: var(--text); text-decoration: none; cursor: pointer; }
   .share #share-native { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
   .share-label { color: var(--muted); font-size: .85rem; }
+  /* シェアされる内容のプレビュー（SNS の投稿風） */
+  .share-preview { max-width: 520px; margin: 8px auto 12px; padding: 12px; text-align: left;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+  .share-preview img { display: block; width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px; }
+  .share-preview p { margin: 0; font-size: .9rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .share-preview .url { color: var(--accent); font-size: .8rem; margin-top: 4px; }
   .fadein { animation: fadein .5s ease-out both; }
   @keyframes fadein { from { opacity: 0; transform: translateY(6px); } }
   #confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
@@ -139,6 +145,11 @@
     <p id="r-detail"></p>
     <p id="r-meta"></p>
     <p class="share-label">結果をシェアする</p>
+    <div class="share-preview">
+      <img id="share-img" alt="シェアされるカード画像" width="1200" height="630">
+      <p id="share-text"></p>
+      <p class="url" id="share-url"></p>
+    </div>
     <div class="share">
       <button type="button" id="share-native" hidden>共有…</button>
       <a id="share-x" target="_blank" rel="noopener">X でポスト</a>
@@ -359,8 +370,15 @@ function setupShare(d, total) {
   $("share-x").href = `https://x.com/intent/post?${new URLSearchParams({ text, url })}`;
   $("share-bsky").href = `https://bsky.app/intent/compose?${new URLSearchParams({ text: `${text}\n${url}` })}`;
   $("share-native").hidden = !navigator.share;
+  // シェアしたときに SNS に表示されるカード画像と文面をそのまま見せる
+  $("share-img").hidden = false;
+  $("share-img").src = `/og/${d.session}-${d.community_id}-${d.slot}.jpg`;
+  $("share-text").textContent = text;
+  $("share-url").textContent = url;
   $("share-copy").textContent = "テキストをコピー";
 }
+
+$("share-img").addEventListener("error", () => { $("share-img").hidden = true; });
 
 $("share-native").addEventListener("click", async () => {
   try { await navigator.share(shareData); } catch { /* キャンセル時は何もしない */ }
