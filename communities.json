@@ -1,54 +1,54 @@
 [
   {
-    "name": "コミュニティ A",
+    "name": "JAWS-UG山梨",
     "lt": true
   },
   {
-    "name": "コミュニティ B",
+    "name": "Shingen.py",
     "lt": true
   },
   {
-    "name": "コミュニティ C",
+    "name": "Houtou.pm",
     "lt": true
   },
   {
-    "name": "コミュニティ D",
-    "lt": true
-  },
-  {
-    "name": "コミュニティ E",
-    "lt": true
-  },
-  {
-    "name": "コミュニティ F",
-    "lt": true
-  },
-  {
-    "name": "コミュニティ G",
-    "lt": true
-  },
-  {
-    "name": "コミュニティ H",
-    "lt": true
-  },
-  {
-    "name": "コミュニティ I",
-    "lt": true
-  },
-  {
-    "name": "コミュニティ J",
-    "lt": true
-  },
-  {
-    "name": "コミュニティ K",
+    "name": "Kofu.rb",
     "lt": false
   },
   {
-    "name": "コミュニティ L",
+    "name": "AI BASE",
+    "lt": true
+  },
+  {
+    "name": "東京-山梨 AI ミートアップ",
+    "lt": true
+  },
+  {
+    "name": "Yamanashi WordPress Meetup",
+    "lt": true
+  },
+  {
+    "name": "kintone Café 山梨",
+    "lt": true
+  },
+  {
+    "name": "SORACOM UG 山梨",
     "lt": false
   },
   {
-    "name": "コミュニティ M",
+    "name": "コーダー道場甲府",
+    "lt": true
+  },
+  {
+    "name": "スクラッチディ in 山梨",
+    "lt": true
+  },
+  {
+    "name": "甲斐国もくもく会",
     "lt": false
+  },
+  {
+    "name": "裏テック無尽",
+    "lt": true
   }
 ]
