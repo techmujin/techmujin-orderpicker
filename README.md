@@ -3,6 +3,34 @@
 テック無尽の発表順（午前：コミュニティ紹介 / 午後：ライトニングトーク）を決めるくじ引きフォーム。
 Cloudflare Workers + D1 + Static Assets で動き、すべて無料枠の範囲で動作します。
 
+## 画面
+
+※ ローカル環境でテスト用の抽選データを入れて撮影したものです。
+
+| くじ引き（トップページ） | 引く前の確認（全体の途中結果つき） |
+|---|---|
+| <img src="docs/images/top.png" width="420" alt="くじ引きフォーム"> | <img src="docs/images/confirm.png" width="420" alt="確認ダイアログ"> |
+| **ルーレット演出**（空き枠を照らしながら減速して止まる） | **発表とシェア**（シェア内容のプレビューつき） |
+| <img src="docs/images/roulette.png" width="420" alt="ルーレット演出"> | <img src="docs/images/result.png" width="420" alt="結果ダイアログ"> |
+
+### 途中結果ページ（`/results.html`）
+
+確定した枠はアクセント色、未確定の枠は斜線と点線ラベルで表示します。下にくじ引き履歴（引いた人・日時）があります。
+
+<img src="docs/images/results.png" width="860" alt="途中結果ページ">
+
+### シェア用ページ（`/s/{session}/{communityId}`）とカード画像
+
+SNS ではカード画像がリンクプレビューとして表示されます。公式サイトへの誘導ボタンつき。
+
+| シェア用ページ | カード画像（`npm run og` で生成） |
+|---|---|
+| <img src="docs/images/share-page.png" width="420" alt="シェア用ページ"> | <img src="docs/images/share-card.jpg" width="420" alt="シェア用カード画像"> |
+
+### スマホ・ダークモード
+
+<img src="docs/images/mobile-dark.png" width="260" alt="スマホ表示（ダークモード）">
+
 ## 仕組み
 
 - 各コミュニティに運営が **合言葉（英数字 4 文字）** を配布し、合言葉を知っている人だけがそのコミュニティとしてくじを引ける
