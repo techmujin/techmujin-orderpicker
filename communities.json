@@ -1,0 +1,54 @@
+[
+  {
+    "name": "JAWS-UG山梨",
+    "lt": true
+  },
+  {
+    "name": "Shingen.py",
+    "lt": true
+  },
+  {
+    "name": "Houtou.pm",
+    "lt": true
+  },
+  {
+    "name": "Kofu.rb",
+    "lt": false
+  },
+  {
+    "name": "AI BASE",
+    "lt": true
+  },
+  {
+    "name": "東京-山梨 AI ミートアップ",
+    "lt": true
+  },
+  {
+    "name": "Yamanashi WordPress Meetup",
+    "lt": true
+  },
+  {
+    "name": "kintone Café 山梨",
+    "lt": true
+  },
+  {
+    "name": "SORACOM UG 山梨",
+    "lt": false
+  },
+  {
+    "name": "コーダー道場甲府",
+    "lt": true
+  },
+  {
+    "name": "スクラッチディ in 山梨",
+    "lt": true
+  },
+  {
+    "name": "甲斐国もくもく会",
+    "lt": false
+  },
+  {
+    "name": "裏テック無尽",
+    "lt": true
+  }
+]

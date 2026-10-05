@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "techmujin-orderpicker",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // /s/* はシェア用ページ。HTML ページは OGP 画像の URL を絶対 URL に書き換えるため Worker を通す
+    "run_worker_first": ["/api/*", "/s/*", "/", "/index.html", "/results", "/results.html"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "orderpicker",
+      // `npx wrangler d1 create orderpicker` で表示される ID に置き換える
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}

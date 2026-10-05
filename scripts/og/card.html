@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<!-- シェア用カード画像（1200x630）のテンプレート。scripts/gen-og.mjs が render() を呼んでスクリーンショットを撮る -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Noto+Sans+JP:wght@500;700;900&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070b14; --panel: rgb(12 17 30 / .88); --line: rgb(255 255 255 / .1);
+    --text: #e6edf7; --muted: #7d8aa3; --accent: #ff7a1a; --cyan: #22d3ee; --green: #4ade80;
+    --mono: "JetBrains Mono", "Noto Sans JP", monospace;
+    --sans: "Noto Sans JP", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(700px 420px at 92% 8%, rgb(255 122 26 / .22), transparent 70%),
+      radial-gradient(640px 420px at 0% 100%, rgb(34 211 238 / .16), transparent 70%),
+      repeating-linear-gradient(0deg, rgb(255 255 255 / .035) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(90deg, rgb(255 255 255 / .035) 0 1px, transparent 1px 40px),
+      var(--bg);
+    color: var(--text); font-family: var(--sans);
+    padding: 44px 56px;
+  }
+  .term {
+    height: 100%; border: 1px solid var(--line); border-radius: 22px; background: var(--panel);
+    box-shadow: 0 30px 80px rgb(0 0 0 / .45), inset 0 1px 0 rgb(255 255 255 / .06);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+  .dot { width: 14px; height: 14px; border-radius: 50%; }
+  .bar .title { margin-left: 14px; font: 500 18px var(--mono); color: var(--muted); letter-spacing: .02em; }
+  .body { flex: 1; padding: 26px 40px 28px; display: flex; flex-direction: column; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+  .logo { flex: none; height: 84px; }
+  .logo.big { height: 120px; }
+  .logo svg { height: 100%; width: auto; display: block; }
+  .cmd { font: 500 26px/1.5 var(--mono); color: var(--muted); white-space: nowrap; }
+  .cmd .p { color: var(--green); font-weight: 700; }
+  .cmd .k { color: var(--text); }
+  .cmd .f { color: var(--cyan); }
+  .ok { font: 700 26px/1.5 var(--mono); color: var(--green); white-space: nowrap; }
+  .main { flex: 1; display: flex; align-items: center; gap: 40px; min-height: 0; }
+  .num { font: 800 230px/0.9 var(--mono); color: var(--accent); letter-spacing: -.04em;
+    text-shadow: 0 0 40px rgb(255 122 26 / .55), 0 0 2px rgb(255 160 90); }
+  .num small { font-size: 64px; color: var(--muted); text-shadow: none; letter-spacing: 0; margin-left: 10px; }
+  .info { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .community { font: 900 64px/1.2 var(--sans); white-space: nowrap; }
+  .session { font: 700 30px var(--sans); color: var(--cyan); }
+  .badge { align-self: flex-start; font: 800 26px var(--mono); color: #0b0f19; background: var(--accent);
+    padding: 4px 16px; border-radius: 8px; box-shadow: 0 0 24px rgb(255 122 26 / .5); }
+  .badge:empty { display: none; }
+  .foot { display: flex; justify-content: space-between; align-items: baseline;
+    font: 700 22px var(--mono); color: var(--muted); }
+  .foot b { color: var(--text); font-family: var(--sans); font-weight: 900; font-size: 26px; }
+  .cursor { display: inline-block; width: .6em; height: 1em; background: var(--green); vertical-align: -.12em; margin-left: 4px; }
+  /* デフォルト（サイト全体）カード */
+  .hero { font: 900 96px/1.15 var(--sans); }
+  .hero em { font-style: normal; color: var(--accent); text-shadow: 0 0 36px rgb(255 122 26 / .5); }
+  .lede { font: 700 28px/1.6 var(--sans); color: var(--muted); }
+  .lede span { color: var(--cyan); }
+</style>
+</head>
+<body>
+<div class="term">
+  <div class="bar">
+    <span class="dot" style="background:#ff5f57"></span>
+    <span class="dot" style="background:#febc2e"></span>
+    <span class="dot" style="background:#28c840"></span>
+    <span class="title">techmujin — orderpicker</span>
+  </div>
+  <div class="body" id="body"></div>
+</div>
+<script>
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+// 長いコミュニティ名は枠に収まるまでフォントを小さくする
+function fit(el, min) {
+  let size = parseFloat(getComputedStyle(el).fontSize);
+  while (el.scrollWidth > el.clientWidth && size > min) {
+    size -= 2;
+    el.style.fontSize = size + "px";
+  }
+}
+
+// イベントロゴ（SVG 文字列）。setLogo で一度だけ設定する
+let logo = "";
+
+// ロゴ SVG の余白を除くため、描画部分（path）の範囲に viewBox を合わせる
+window.setLogo = (svgText) => {
+  const holder = document.createElement("div");
+  holder.style.cssText = "position:absolute;left:-9999px;width:1000px;height:1000px";
+  holder.innerHTML = svgText.replace(/^[\s\S]*?(?=<svg)/, "");
+  document.body.append(holder);
+  const svg = holder.querySelector("svg");
+  const inv = svg.getScreenCTM().inverse();
+  let [l, t, r, b] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const el of svg.querySelectorAll("path, polygon, rect:not([style*='fill-opacity:0']), circle, ellipse, text")) {
+    const rc = el.getBoundingClientRect();
+    if (!rc.width && !rc.height) continue;
+    for (const [x, y] of [[rc.left, rc.top], [rc.right, rc.bottom]]) {
+      const pt = new DOMPoint(x, y).matrixTransform(inv);
+      l = Math.min(l, pt.x); t = Math.min(t, pt.y); r = Math.max(r, pt.x); b = Math.max(b, pt.y);
+    }
+  }
+  svg.setAttribute("viewBox", `${l} ${t} ${r - l} ${b - t}`);
+  svg.removeAttribute("width");
+  svg.removeAttribute("height");
+  logo = svg.outerHTML;
+  holder.remove();
+};
+
+// data: { kind: "result", session, sessionLabel, community, slot, total, badge } または { kind: "default", ... }
+window.render = (data) => {
+  const body = document.getElementById("body");
+  if (data.kind === "default") {
+    body.innerHTML = `
+      <div class="head">
+        <div>
+          <div class="cmd"><span class="p">$</span> <span class="k">techmujin</span> draw <span class="f">--all</span></div>
+          <div class="ok">✔ ${data.communities} communities · 2 sessions</div>
+        </div>
+        <div class="logo big">${logo}</div>
+      </div>
+      <div class="main"><div class="info">
+        <div class="hero">発表順<em>くじ引き</em></div>
+        <div class="lede">コミュニティ紹介（午前）<span>${data.introSlots} 枠</span> ／ ライトニングトーク（午後）<span>${data.ltSlots} 枠</span></div>
+      </div></div>
+      <div class="foot"><b></b><span>#テック無尽<span class="cursor"></span></span></div>`;
+    return;
+  }
+  body.innerHTML = `
+    <div class="head">
+      <div>
+        <div class="cmd"><span class="p">$</span> <span class="k">techmujin</span> draw <span class="f">--session</span> ${esc(data.session)}</div>
+        <div class="ok">✔ 抽選完了</div>
+      </div>
+      <div class="logo">${logo}</div>
+    </div>
+    <div class="main">
+      <div class="num">${String(data.slot).padStart(2, "0")}<small>/${data.total}</small></div>
+      <div class="info">
+        <div class="session">${esc(data.sessionLabel)}</div>
+        <div class="community" id="community">${esc(data.community)}</div>
+        <div class="badge">${esc(data.badge || "")}</div>
+      </div>
+    </div>
+    <div class="foot"><b>発表順くじ引き</b><span>#テック無尽<span class="cursor"></span></span></div>`;
+  fit(document.getElementById("community"), 30);
+};
+</script>
+</body>
+</html>
