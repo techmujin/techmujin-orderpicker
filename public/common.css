@@ -2,11 +2,13 @@
   --bg: #f6f5f1; --card: #ffffff; --text: #1d1d1b; --muted: #6b6a66;
   --line: #e2e0d9; --accent: #c2410c; --accent-text: #ffffff; --err: #b91c1c;
   --hl: color-mix(in srgb, var(--accent) 16%, transparent);
+  --stripe: rgb(0 0 0 / .045);
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #161614; --card: #22221f; --text: #ecebe6; --muted: #a3a29c;
     --line: #393934; --accent: #f97316; --accent-text: #1d1d1b; --err: #f87171;
+    --stripe: rgb(255 255 255 / .05);
   }
 }
 * { box-sizing: border-box; }
@@ -18,7 +20,7 @@ a { color: var(--accent); }
 h1 { font-size: 1.6rem; margin: 0 0 4px; }
 h2 { font-size: 1.15rem; margin: 0 0 12px; }
 h2:focus { outline: none; }
-h2 small, h3 small { font-size: .8rem; font-weight: 600; color: var(--muted); margin-left: 6px; }
+h2 small, h3 small { font-size: .8rem; font-weight: 600; color: var(--muted); margin-left: 6px; white-space: nowrap; display: inline-block; }
 p.lead { color: var(--muted); margin: 0 0 24px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
 .grid2 .card { margin-bottom: 0; }
@@ -31,6 +33,13 @@ th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line
 th { color: var(--muted); font-weight: 600; font-size: .8rem; }
 td.slot { font-weight: 700; width: 3em; font-variant-numeric: tabular-nums; }
 td.empty { color: var(--muted); }
+/* 発表順の表：確定した枠ははっきり、未確定の枠は斜線と点線ラベルでひと目で分かるように */
+tr.filled td.slot { color: var(--accent); }
+tr.filled td { font-weight: 600; }
+tr.open td { background: repeating-linear-gradient(-45deg, transparent 0 7px, var(--stripe) 7px 14px); color: var(--muted); }
+tr.open td.slot { font-weight: 400; }
+.pending { display: inline-block; padding: 0 10px; border: 1px dashed currentColor; border-radius: 999px;
+  font-size: .8em; line-height: 1.7; }
 .tablewrap { overflow-x: auto; }
 
 /* 公式サイトへの誘導 */
@@ -47,5 +56,7 @@ td.empty { color: var(--muted); }
 .board ol { list-style: none; margin: 0; padding: 0; font-size: .88rem; }
 .board li { display: flex; gap: 8px; padding: 2px 8px; border-bottom: 1px solid var(--line); border-radius: 4px; }
 .board li b { width: 1.6em; text-align: right; font-variant-numeric: tabular-nums; flex: none; }
-.board li.open span { color: var(--muted); }
+.board li.open { background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--stripe) 6px 12px); }
+.board li.open, .board li.open span { color: var(--muted); }
+.board li:not(.open) b { color: var(--accent); }
 .board li.hl { background: var(--hl); font-weight: 700; }

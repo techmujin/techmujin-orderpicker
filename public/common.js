@@ -23,7 +23,9 @@ function slotCount(state, session) {
 }
 
 function progress(state, session) {
-  return `${state.draws.filter((d) => d.session === session).length} / ${slotCount(state, session)} 確定`;
+  const done = state.draws.filter((d) => d.session === session).length;
+  const total = slotCount(state, session);
+  return done < total ? `${done} / ${total} 確定・残り ${total - done}` : `${done} / ${total} 確定（全枠決定）`;
 }
 
 // 順番表（tbody の中身）。順番とコミュニティのみ
@@ -33,8 +35,8 @@ function orderRowsHTML(state, session) {
   for (let s = 1; s <= slotCount(state, session); s++) {
     const d = map.get(s);
     rows.push(d
-      ? `<tr><td class="slot">${s}</td><td>${esc(d.community)}</td></tr>`
-      : `<tr><td class="slot">${s}</td><td class="empty">未確定</td></tr>`);
+      ? `<tr class="filled"><td class="slot">${s}</td><td>${esc(d.community)}</td></tr>`
+      : `<tr class="open"><td class="slot">${s}</td><td><span class="pending">未確定</span></td></tr>`);
   }
   return rows.join("");
 }
