@@ -46,6 +46,10 @@ tr.open td.slot { font-weight: 400; }
 .site-footer { max-width: 1040px; margin: 0 auto; padding: 8px 16px 40px; text-align: center; font-size: .85rem; color: var(--muted); }
 .site-footer a { font-weight: 700; }
 .site-footer span { display: block; margin-top: 2px; }
+/* リポジトリへのリンクはさりげなく（小さく・控えめな色） */
+.site-footer a.repo { display: inline-flex; align-items: center; gap: 4px; margin-top: 10px;
+  font-size: .75rem; font-weight: 400; color: var(--muted); text-decoration: none; opacity: .8; }
+.site-footer a.repo:hover { opacity: 1; text-decoration: underline; }
 .cta { display: inline-block; padding: 12px 24px; border-radius: 999px; background: var(--accent); color: var(--accent-text);
   font-weight: 700; text-decoration: none; }
 
